@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.errorMessage {
+  color: #ff0000;
+  font-size: 14px;
+}
+.ghost {
+  color: #a5a5a5;
+}
+.day {
+  text-align: center;
+  padding: 5px;
+}
+html {
+  scroll-behavior: smooth;
+  scroll-padding: 70px;
+}
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #78cfb2;
+}
+::-webkit-scrollbar-thumb {
+  background: #008458;
+}
+li {
+  display: flex;
+  gap: 5px;
+}
