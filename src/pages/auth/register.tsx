@@ -25,14 +25,17 @@ export default function Register() {
     resolver: zodResolver(registerSchema),
   });
   async function signUpNewUser(data: Inputs) {
-    const response = await fetch('http://localhost:3000/api/auth/register', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(
+      'https://server-rincon-de-la-cordillera.onrender.com/api/auth/register',
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      }
+    );
     const res = await response.json();
     if (res.existing == 'user') setError('user', { message: 'hola' });
     if (res.existing == 'email') setError('correo', { message: 'hola' });

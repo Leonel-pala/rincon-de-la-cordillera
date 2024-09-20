@@ -1,15 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }: any) => {
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     const verifyCookie = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/verifyCookie', {
-          credentials: 'include',
-        });
+        const response = await fetch(
+          'https://server-rincon-de-la-cordillera.onrender.com/api/verifyCookie',
+          {
+            credentials: 'include',
+          }
+        );
         const res = await response.json();
         setIsAuthenticated(res);
       } catch (error) {
@@ -21,10 +28,10 @@ const ProtectedRoute = ({ children }: any) => {
   }, []);
 
   if (isAuthenticated === null) {
-    return;
+    return <div>Loading...</div>;
   }
 
-  return isAuthenticated ? children : <Navigate to="/auth" />;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
 };
 
 export default ProtectedRoute;

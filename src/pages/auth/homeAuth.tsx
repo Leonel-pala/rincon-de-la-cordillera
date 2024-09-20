@@ -17,14 +17,17 @@ export default function HomeAuth() {
       user: formData.get('user'),
       password: formData.get('password'),
     };
-    const response = await fetch('http://localhost:3000/api/auth/login', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(
+      'https://server-rincon-de-la-cordillera.onrender.com/api/auth/login',
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      }
+    );
     const res = await response.json();
     if (res.error == 'userUndefined') {
       return setError({ user: 'Usuario no existe', password: '' });

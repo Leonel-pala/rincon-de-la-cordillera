@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import HeaderAdmin from './admin/headerAdmin';
 
@@ -8,9 +8,12 @@ export default function Header() {
 
   useEffect(() => {
     async function cookies() {
-      const response = await fetch('http://localhost:3000/api/verifyCookie', {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        'https://server-rincon-de-la-cordillera.onrender.com/api/verifyCookie',
+        {
+          credentials: 'include',
+        }
+      );
       const res = await response.json();
       setUser(res);
       setLoad(!load);
@@ -19,13 +22,16 @@ export default function Header() {
   }, []);
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const verifyRole = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/verifyRole', {
-          credentials: 'include',
-        });
+        const response = await fetch(
+          'https://server-rincon-de-la-cordillera.onrender.com/api/verifyRole',
+          {
+            credentials: 'include',
+          }
+        );
         const res = await response.json();
         if (res.accesAdmin) {
           setIsAuthenticated(true);
@@ -39,7 +45,19 @@ export default function Header() {
 
     verifyRole();
   }, []);
-
+  async function logout() {
+    const response = await fetch(
+      'https://server-rincon-de-la-cordillera.onrender.com/api/logout',
+      {
+        credentials: 'include',
+      }
+    );
+    const res = await response.json();
+    if (res.logout) {
+      navigate('/auth');
+      return;
+    }
+  }
   return (
     <header className="fixed   mx-auto w-full    px-8 z-50 top-5 ">
       <div className="bg-header w-full  flex items-center justify-between text-[#000]  py-4 px-8">
@@ -78,12 +96,14 @@ export default function Header() {
           ) : (
             <>
               {user ? (
-                <Link
-                  to="myProfile"
-                  className="p-2 duration-200 hover:bg-gray-300"
+                <button
+                  onClick={() => {
+                    logout();
+                  }}
+                  className="p-2 text-error border border-error duration-200 hover:bg-gray-300"
                 >
-                  Mi perfil
-                </Link>
+                  Cerrar sesion
+                </button>
               ) : (
                 <>
                   <Link

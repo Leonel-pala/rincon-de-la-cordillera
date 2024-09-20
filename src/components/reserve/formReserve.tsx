@@ -152,27 +152,26 @@ export default function FormReserve({ isOpen, onClose, dateList }: any) {
         <span className="w-full h-[2px] relative bg-white my-3"></span>
         <div className="flex flex-col gap-2">
           <span>
-            Se {cantPersona > 1 ? 'quedarán' : 'queda'} los siguientes días:{' '}
-            {dateList.map((dias: string, index: number) => (
-              <>
-                <span key={index} className="bg-primary-third px-1 rounded-md">
-                  {dias}
-                </span>
-                {dateList.length !== index + 1 ? ', ' : ''}
-              </>
-            ))}
+            Se {cantPersona > 1 ? 'quedarán' : 'queda'} a partir del
+            <span className="bg-primary-third px-1 rounded-md">
+              {dateList.startDate}
+            </span>{' '}
+            hasta{' '}
+            <span className="bg-primary-third px-1 rounded-md">
+              {dateList.endDate}
+            </span>
           </span>
           <span>
             Ingresando el{' '}
             <span className="bg-primary-third px-1 rounded-md">
-              {dateList[0]}
+              {dateList.startDate}
             </span>{' '}
             luego de las 14:30
           </span>
           <span>
             Saliendo el{' '}
             <span className="bg-primary-third px-1 rounded-md">
-              {diaDeSalida.toLocaleDateString('es-ES')}
+              {dateList.endDate}
             </span>{' '}
             antes de las 10:30
           </span>

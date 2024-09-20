@@ -9,11 +9,15 @@ import PageReserv from './pages/reserve/pageReserv';
 import ProtectedRoute from './pages/protectedRouted';
 import MyReserv from './pages/pageMyReserv';
 import ProtectedRouteByRole from './pages/protectedRoutedByRole';
-import AllReserve from './pages/reserve/admin/pageAllReserve';
+import PageAllReserve from './pages/reserve/admin/pageAllReserve';
+import PagesRooms from './pages/reserve/admin/pageRooms';
+import RoomsSpecific from './pages/reserve/admin/pageRoomSpecific';
+import PagePanelAdmin from './pages/reserve/admin/pagePanelAdmin';
+import PagePendingReserve from './pages/reserve/admin/pagePendingReserve';
 
 function App() {
   return (
-    <>
+    <main className="min-h-screen max-w-screen">
       <Routes>
         <Route path="/" element={<PageHome />} />
         <Route
@@ -25,16 +29,22 @@ function App() {
           }
         />
         <Route
-          path="/todas-las-reservas"
+          path="/admin-panel/*"
           element={
             <ProtectedRoute>
               <ProtectedRouteByRole>
-                <AllReserve />
+                <PagePanelAdmin />
               </ProtectedRouteByRole>
             </ProtectedRoute>
           }
-        />
-
+        >
+          <Route path="" element={<PageAllReserve />} />
+          <Route path="hospedajes" element={<PagesRooms />} />
+          <Route path="reservas/confirmadas" element={<h1>Confirmadas</h1>} />
+          <Route path="reservas/pendientes" element={<PagePendingReserve />} />
+          <Route path="cabanna/:numberRoom" element={<RoomsSpecific />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
         <Route
           path="/misReservas"
           element={
@@ -43,7 +53,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route path="/auth/*" element={<PageAuth />}>
           <Route path="" element={<HomeAuth />} />
           <Route path="register" element={<Register />} />
@@ -51,7 +60,7 @@ function App() {
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </>
+    </main>
   );
 }
 

@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import { ArrowLeft, ArrowRight } from 'react-feather';
 import FormReserve from './reserve/formReserve';
+import GhostDay from './calendar/ghostDay';
+import clsx from 'clsx';
 
 export default function DatePicker() {
   const monthName = [
@@ -31,9 +33,14 @@ export default function DatePicker() {
   const currMonth = date.getMonth();
   const currDay = date.getDate();
 
+  const [start, setStart] = useState(new Date(1, 1, 1));
+  const [end, setEnd] = useState(new Date());
+
+  const [startPrint, setStartPrint] = useState('-');
+  const [endPrint, setEndPrint] = useState('-');
+
   const [mes, setMes] = useState(currMonth);
   const [anno, setAnno] = useState(currYear);
-  const [fechasSelect, setFechasSelect] = useState<string[]>([]);
 
   const saltoMes = useCallback(
     (action: string) => {
@@ -61,31 +68,61 @@ export default function DatePicker() {
     },
     [anno, currMonth, currYear]
   );
+  function fechaEnRango(fecha: any, fechaInicio: any, fechaFin: any) {
+    const [dia, mes, anio] = fecha.split('/').map(Number);
+    const fechaReserva = new Date(anio, mes - 1, dia); // Crear objeto Date (mes es 0-indexed)
 
+    return fechaReserva >= fechaInicio && fechaReserva <= fechaFin;
+  }
   const selectDays = useCallback(
     (dia: number) => {
+      const newDate = new Date(anno, mes, dia);
       const fecha = `${dia}/${mes + 1}/${anno}`;
-      setFechasSelect((prevFechas) => {
-        const updatedFechas = prevFechas.includes(fecha)
-          ? prevFechas.filter((item) => item !== fecha)
-          : [...prevFechas, fecha];
 
-        return updatedFechas.sort((a, b) => {
-          const dateA = new Date(a.split('/').reverse().join('/'));
-          const dateB = new Date(b.split('/').reverse().join('/'));
-          return dateA.getTime() - dateB.getTime();
-        });
-      });
+      if (startPrint === '-') {
+        setStart(newDate);
+        setStartPrint(fecha);
+        setEnd(new Date());
+        setEndPrint('-');
+      } else if (newDate > start) {
+        const hola = reservas.filter((reserva) =>
+          fechaEnRango(reserva.fecha, start, newDate)
+        );
+        if (hola[0] == undefined) {
+          if (newDate > end) {
+            setEnd(newDate);
+            setEndPrint(fecha);
+          } else {
+            const diffStart = Math.abs(newDate.getTime() - start.getTime());
+            const diffEnd = Math.abs(newDate.getTime() - end.getTime());
+
+            if (diffStart < diffEnd) {
+              setStart(newDate);
+              setStartPrint(fecha);
+            } else {
+              setEnd(newDate);
+              setEndPrint(fecha);
+            }
+          }
+        } else {
+          setStart(newDate);
+          setStartPrint(fecha);
+          setEnd(new Date());
+          setEndPrint('-');
+        }
+      } else {
+        setStart(newDate);
+        setStartPrint(fecha);
+        setEnd(new Date());
+        setEndPrint('-');
+      }
     },
-    [mes, anno]
+    [mes, anno, start, end, startPrint]
   );
 
   const daysMonthActually = new Date(anno, mes + 1, 0).getDate();
   const reservas = [
-    { fecha: '8/8/2024', status: 'pending' },
-    { fecha: '9/8/2024', status: 'pending' },
-    { fecha: '10/8/2024', status: 'confirm' },
-    { fecha: '11/8/2024', status: 'confirm' },
+    { fecha: '27/8/2024', status: 'confirm' },
     { fecha: '31/8/2024', status: 'confirm' },
   ];
 
@@ -99,32 +136,44 @@ export default function DatePicker() {
 
     if (isGhostDay) {
       monthActuallyComponent.push(
-        <div
-          className={`day ghost ${
-            isCurrentDay ? 'border-2 border-solid border-primary' : ''
-          }`}
-          key={i}
-        >
-          {i}
-        </div>
+        <GhostDay day={i} hoy={isCurrentDay}></GhostDay>
       );
     } else if (search) {
       monthActuallyComponent.push(
         <div
-          className="day flex justify-center"
+          className="relative day flex justify-center"
           key={i}
           onClick={() => {
             if (search.status === 'pending') selectDays(i);
           }}
         >
+          <span
+            className={
+              'absolute bg-blue-400 h-8 z-10 ' +
+              clsx({
+                'w-full right-0':
+                  new Date(anno, mes, i) > start &&
+                  new Date(anno, mes, i) < end,
+                'w-1/2 left-0': endPrint == `${i}/${mes + 1}/${anno}`,
+                'w-1/2 right-0':
+                  startPrint == `${i}/${mes + 1}/${anno}` && endPrint !== '-',
+              })
+            }
+          ></span>
           <div
-            className={`h-8 w-8 leading-loose rounded-full ${
-              search.status === 'confirm'
-                ? 'bg-green-600 cursor-default'
-                : fechasSelect.includes(fecha)
-                ? 'bg-orange-500 cursor-pointer hover:bg-orange-400'
-                : 'bg-orange-300 cursor-pointer hover:bg-orange-400'
-            }`}
+            className={
+              `z-20 h-8 w-8 leading-loose rounded-full  ` +
+              clsx({
+                'bg-green-600 cursor-default l': search.status === 'confirm',
+                'bg-blue-700 l':
+                  startPrint == `${i}/${mes + 1}/${anno}` ||
+                  endPrint == `${i}/${mes + 1}/${anno}`,
+                'bg-blue-500 l':
+                  new Date(anno, mes, i) > start &&
+                  new Date(anno, mes, i) < end,
+              }) +
+              'bg-orange-200'
+            }
           >
             {i}
           </div>
@@ -132,13 +181,31 @@ export default function DatePicker() {
       );
     } else {
       monthActuallyComponent.push(
-        <div className="day flex justify-center" key={i}>
+        <div className="relative day flex justify-center" key={i}>
+          <span
+            className={
+              'absolute bg-blue-400 h-8 z-10 ' +
+              clsx({
+                'w-full right-0':
+                  new Date(anno, mes, i) > start &&
+                  new Date(anno, mes, i) < end,
+                'w-1/2 left-0': endPrint == `${i}/${mes + 1}/${anno}`,
+                'w-1/2 right-0':
+                  startPrint == `${i}/${mes + 1}/${anno}` && endPrint !== '-',
+              })
+            }
+          ></span>
           <div
-            className={`cursor-pointer h-8 w-8 leading-loose rounded-full hover:bg-orange-400 ${
-              fechasSelect.includes(fecha)
-                ? 'bg-orange-500 hover:bg-orange-400'
-                : ''
-            }`}
+            className={`z-20 cursor-pointer h-8 w-8 leading-loose rounded-full hover:bg-orange-400 ${clsx(
+              {
+                'bg-blue-700':
+                  startPrint == `${i}/${mes + 1}/${anno}` ||
+                  endPrint == `${i}/${mes + 1}/${anno}`,
+                'bg-blue-500':
+                  new Date(anno, mes, i) > start &&
+                  new Date(anno, mes, i) < end,
+              }
+            )}`}
             onClick={() => selectDays(i)}
           >
             {i}
@@ -178,7 +245,7 @@ export default function DatePicker() {
   const closeModal = () => setIsModalOpen(false);
 
   const submitDate = () => {
-    if (fechasSelect.length > 0) {
+    if (startPrint != '-' && endPrint != '-') {
       openModal();
     }
   };
@@ -187,7 +254,7 @@ export default function DatePicker() {
     <>
       <FormReserve
         isOpen={isModalOpen}
-        dateList={fechasSelect}
+        dateList={{ startDate: startPrint, endDate: endPrint }}
         onClose={closeModal}
       />
 
@@ -214,7 +281,7 @@ export default function DatePicker() {
               <ArrowRight />
             </button>
           </div>
-          <div className="grid grid-cols-7 max-w-[600px] border-2 border-solid">
+          <div className="grid grid-cols-7 max-w-[600px] border-2 border-solid border-primary">
             {dayName.map((day) => (
               <div
                 key={day}
@@ -228,16 +295,23 @@ export default function DatePicker() {
             {monthNextComponent}
           </div>
         </div>
-        <div className="flex flex-wrap gap-1 max-w-[535px] w-full min-h-12 bg-second-foreground overflow-y-auto p-2 text-center text-[#fff]">
-          {fechasSelect.map((fecha) => (
-            <span key={fecha} className="bg-primary h-max px-2 py-1 rounded-lg">
-              {fecha}
+        <div className="flex gap-1 max-w-[535px] w-full min-h-12 bg-primary overflow-y-auto p-2 text-white text-center ">
+          <div>
+            <b>Inicio:</b>{' '}
+            <span className="bg-[#61b499] px-1 w-[85px]  text-center">
+              {startPrint}
             </span>
-          ))}
+          </div>
+          <div>
+            <b>Fin:</b>{' '}
+            <span className="bg-[#61b499] px-1 w-[85px]  text-center">
+              {endPrint}{' '}
+            </span>
+          </div>
         </div>
         <button
           className={`text-[#fff] py-1 mt-2 text-2xl px-2 ${
-            fechasSelect.length > 0
+            startPrint != '-' && endPrint != '-'
               ? 'bg-primary cursor-pointer'
               : 'bg-primary-foreground cursor-default'
           }`}

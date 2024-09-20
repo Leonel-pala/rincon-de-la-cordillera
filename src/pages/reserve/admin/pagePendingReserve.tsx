@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { checkFreeRoom, getAllReserve } from '../../../action/reserver';
+import { getPendingReserve } from '../../../action/reserver';
 import { Minus, X } from 'react-feather';
 import clsx from 'clsx';
 import ReserveTitlePage from '../../../components/admin/reserveTitlePage';
@@ -28,7 +28,7 @@ type MoreDetails = {
   email: string;
 };
 
-export default function PageAllReserve() {
+export default function PagePendingReserve() {
   const [reserves, setReserves] = useState<Reserve[]>([]);
   const [load, setLoad] = useState(true);
 
@@ -39,16 +39,13 @@ export default function PageAllReserve() {
 
   useEffect(() => {
     async function fetchReserves() {
-      const fetchAllReserve = await getAllReserve();
+      const fetchAllReserve = await getPendingReserve();
       setReserves(fetchAllReserve);
       setLoad(false);
     }
 
     fetchReserves();
   }, []);
-  function asignarReserva(startDate: string, endDate: string) {
-    checkFreeRoom(startDate, endDate);
-  }
 
   return (
     <>
@@ -125,12 +122,7 @@ export default function PageAllReserve() {
                     </div>
                     <div className="flex justify-between mt-auto">
                       {item.status == 'pending' ? (
-                        <button
-                          className="text-primary border-primary border p-1 duration-100 hover:bg-primary hover:text-white"
-                          onClick={() => {
-                            asignarReserva(item.startDate, item.endDate);
-                          }}
-                        >
+                        <button className="text-primary border-primary border p-1 duration-100 hover:bg-primary hover:text-white">
                           Asignar
                         </button>
                       ) : (
